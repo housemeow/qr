@@ -1,4 +1,5 @@
 var http = require('http');
+var url = require('url');
 var formidable = require('formidable');
 var qrcode = require('qrcode');
 var config = require('./config.json');
@@ -6,25 +7,25 @@ var API = require('./api');
 var imgur = new API.Imgur(config);
 
 http.createServer(function(req, res) {
-    if (req.url == '/upload' && req.method == 'POST') {
+    var query = url.parse(req.url, true).query;
+    if (req.url.match(/^\/qr\b/g) && req.method == 'GET') {
+        var form = new formidable.IncomingForm();
+        qrcode.toDataURL(query.url, function (err, url) {
+            res.write('<html><body><img src="' + url);
+            res.end('"></body></html>');
+        });
+    } else if (req.url.match(/^\/upload\b/g) && req.method == 'POST') {
+        console.log('upload')
         var form = new formidable.IncomingForm();
         form.parse(req, function(err, fields, files) {
-            var qr = false;
-            if ('qr' in fields) {
-                qr = JSON.parse(fields.qr);
-            }
-
             imgur.upload(files.image.path, function(err, body) {
-                if (qr) {
-                    qrcode.toDataURL(body.data.link, function (err, url) {
-                        res.writeHead(200, {'Content-Type': 'text/html'});
-                        res.write('<html><body><img src="' + url + '"/></body></html>');
-                        res.end();
-                    });
-                } else {
-                    res.write(body.data.link);
+                qrcode.toDataURL(body.data.link, function (err, url) {
+                    res.write(JSON.stringify({
+                        link: body.data.link,
+                        qr: url
+                    }));
                     res.end();
-                }
+                });
             });
         });
     }
