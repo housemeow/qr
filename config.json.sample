@@ -1,3 +1,4 @@
 {
-	"clientId": "YOUR_IMGUR_CLIENT_ID"
+	"clientId": "YOUR_IMGUR_CLIENT_ID",
+	"port": "SERVER_PORT"
 }
