@@ -1,6 +1,7 @@
 (function() {
     var request = require('request');
     var fs = require('fs');
+    var config = require('../config.json');
 
     function Imgur(config) {
         this.upload = function(path, callback) {
@@ -10,7 +11,7 @@
                     image: fs.createReadStream(path)
                 },
                 headers: {
-                    'Authorization': 'Client-ID fc8412894d22aa7'
+                    'Authorization': 'Client-ID ' + config.clientId
                 }
             }, function(err, httpResponse, body) {
                 body = JSON.parse(body);
